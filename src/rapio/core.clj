@@ -5,8 +5,7 @@
             [java.util.concurrent CountDownLatch]))
 
 (defonce ^:private available-cpus
-  (.availableProcessors
-    (Runtime/getRuntime)))
+  (.availableProcessors (Runtime/getRuntime)))
 
 
 (defmacro with-latch
