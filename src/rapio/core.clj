@@ -4,7 +4,7 @@
   (:import  [java.io File RandomAccessFile]
             [java.util.concurrent CountDownLatch]))
 
-(defonce ^:private available-cpus
+(def ^:private available-cpus
   (.availableProcessors (Runtime/getRuntime)))
 
 
@@ -70,9 +70,9 @@
 
 (defn pspit
   ""
-  [f content & {:keys [threads ^String encoding]
-                :or {encoding "UTF-8"
-                     threads available-cpus}}]
+  [dest content & {:keys [threads ^String encoding]
+                   :or {encoding "UTF-8"
+                        threads available-cpus}}]
   (assert (pos? threads))
 
   (let [all-bytes (if (string? content)
@@ -85,7 +85,7 @@
     ;; main work
     (do-latched-work chunks
       (fn [start size]
-        (let [^File f (cond-> f (not (instance? File f)) jio/file)]
+        (let [^File f (cond-> dest (not (instance? File dest)) jio/file)]
           (with-open [^RandomAccessFile out (RandomAccessFile. f "rw")]
             (.seek out start)
             (.write out all-bytes start size)))))))
