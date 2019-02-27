@@ -1,11 +1,13 @@
 (ns rapio.core
-  (:require [rapio.internal :refer [local-file-size chunk-for-threads]]
-            [clojure.java.io :as jio])
-  (:import  [java.io File RandomAccessFile]
+  (:require [rapio.internal :refer [local-file-size chunk-for-n ->file]])
+  (:import  [java.io RandomAccessFile]
             [java.util.concurrent CountDownLatch]))
 
-(def ^:private available-cpus
+(def ^:private CPUS
   (.availableProcessors (Runtime/getRuntime)))
+
+(def ^:constant ARRAY-CAPACITY
+  (int (- Integer/MAX_VALUE 2)))
 
 
 (defmacro with-latch
@@ -43,22 +45,23 @@
    <opts> can include :encoding (default 'UTF-8'), :raw-bytes? (default false),
    and/or :threads, which controls how the contents of <source> will be chunked,
    and ultimately the level of parallelism. Defaults to `.availableProcessors()`.
-   If <threads> = 1 and <raw-bytes?> = false, delegates to `clojure.core/slurp`."
+   If <threads> = 1 and <raw-bytes?> = false, delegates to `clojure.core/slurp`.
+   LIMITATION: works on files up to 2GB."
   [source & {:keys [^String encoding threads raw-bytes?]
              :or {encoding "UTF-8"
-                  threads available-cpus}}]
+                  threads  CPUS}}]
   (assert (pos? threads))
 
   (if (or raw-bytes? (> threads 1))
     (let [total (local-file-size source)
-          chunks (chunk-for-threads threads total)
+          chunks (chunk-for-n threads total)
           target (byte-array total)]
       ;; sanity check
       ;(assert (= threads (count chunks)))
       ;; main work
       (do-latched-work chunks
         (fn [start size]
-          (let [^File source (cond-> source (not (instance? File source)) jio/file)]
+          (let [source (->file source)]
             (with-open [^RandomAccessFile in (RandomAccessFile. source "r")]
               (.seek in start)
               (.read in target start size)))))
@@ -68,24 +71,79 @@
     (slurp source :encoding encoding)))
 
 
+(defn pslurp-big
+  "Similar to `pslurp`, but intended to be used with files larger than 2GB.
+   Returns a seq (per `pmap`) of N byte-arrays."
+  [source]
+  (let [total (local-file-size source)
+        _ (assert (> total ARRAY-CAPACITY)
+                  "File not big enough - see `pslurp` for files smaller than 2GB.")
+        nchunks (cond-> (quot total ARRAY-CAPACITY)
+                        (pos? (rem total ARRAY-CAPACITY))
+                        inc)
+        chunks (chunk-for-n nchunks total)]
+    ;; sanity check
+    ;(assert (= nchunks (count chunks)))
+    ;; main work
+    (doall
+      (pmap
+        (fn [[start end]]
+          (let [source (->file source)
+                size (- end start)
+                target (byte-array size)]
+            (with-open [^RandomAccessFile in (RandomAccessFile. source "r")]
+              (.seek in start)
+              (.read in target 0 size))
+            target))
+        chunks))))
+
+
 (defn pspit
   ""
   [dest content & {:keys [threads ^String encoding]
                    :or {encoding "UTF-8"
-                        threads available-cpus}}]
+                        threads  CPUS}}]
   (assert (pos? threads))
 
-  (let [all-bytes (if (string? content)
-                    (.getBytes ^String content encoding)
-                    content)
-        total (alength ^bytes all-bytes)
-        chunks (chunk-for-threads threads total)]
+  (let [^bytes all-bytes (if (string? content)
+                           (.getBytes ^String content encoding)
+                           content)
+        total (alength all-bytes)
+        chunks (chunk-for-n threads total)]
     ;; sanity check
     ;(assert (= threads (count chunks)))
     ;; main work
     (do-latched-work chunks
       (fn [start size]
-        (let [^File f (cond-> dest (not (instance? File dest)) jio/file)]
+        (let [f (->file dest)]
           (with-open [^RandomAccessFile out (RandomAccessFile. f "rw")]
             (.seek out start)
             (.write out all-bytes start size)))))))
+
+(defn pspit-big
+  "Similar to `pspit`, but intended to be used against multiple <contents>,
+   whose concatenation wouldn't fit in a single String or byte-array (larger than 2GB)."
+  [dest contents & {:keys [^String encoding]
+                    :or {encoding "UTF-8"}}]
+  (let [all-bytes (map (fn [content]
+                         (if (string? content)
+                           (.getBytes ^String content encoding)
+                           content))
+                       contents)
+        total (->> all-bytes
+                   (map #(alength ^bytes %))
+                   (apply +))
+        _ (assert (> Long/MAX_VALUE total))
+        chunks (chunk-for-n (count contents) total)]
+    ;; sanity check
+    ;(assert (= threads (count chunks)))
+    ;; main work
+    (dorun
+      (pmap
+        (fn [[start _] ^bytes content]
+          (let [source (->file dest)]
+            (with-open [^RandomAccessFile out (RandomAccessFile. source "rw")]
+              (.seek out start)
+              (.write out content 0 (alength content)))))
+        chunks
+        all-bytes))))

@@ -1,4 +1,5 @@
 (ns rapio.internal
+  (:require [clojure.java.io :as jio])
   (:import [java.io File]
            [java.net URL URI]
            [java.nio.file Paths Files]))
@@ -33,11 +34,18 @@
   [source]
   (Files/size (local-path source)))
 
-(defn chunk-for-threads
-  [threads total-length]
-  (let [qchunk (quot total-length threads)]
+(defn chunk-for-n
+  [n total-length]
+  (let [qchunk (quot total-length n)]
     (->> [total-length]
          (concat
            (map (partial * qchunk)
-                (range threads)))
+                (range n)))
          (partition 2 1))))
+
+(defn ->file
+  ^File [x]
+  (cond-> x
+          (not (instance? File x))
+          jio/file))
+

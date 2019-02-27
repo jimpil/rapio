@@ -1,6 +1,7 @@
 (ns rapio.core-test
   (:require [clojure.test :refer :all]
             [rapio.core :refer :all]
+            [rapio.internal :as internal]
             [clojure.java.io :as io]
             [clojure.java.io :as jio])
   (:import  [java.util Arrays]))
@@ -72,8 +73,35 @@
                          ^bytes (pslurp temp-file-name-copy :raw-bytes? true)))
 
       (finally
-        (jio/delete-file temp-file-name)))
+        (jio/delete-file temp-file-name)
+        (jio/delete-file temp-file-name-copy)))
     )
+
+  )
+
+(comment ;; local testing of pslurp/pspit-big
+
+  ;; increase REPL heap before eval-ing this!
+
+    (let [large-file "/home/dimitris/Desktop/B375/update.zip" ;; 2.2GB
+          arrays (pslurp-big large-file)
+          lengths (map alength arrays)
+          lengths-sum (apply + lengths)
+          large-file-copy (str large-file "-DELETEME")]
+      (try
+
+        (pspit-big large-file-copy arrays)
+
+        (and
+          (= lengths-sum ;; didn't miss any bytes
+             (internal/local-file-size large-file))
+
+          (= lengths-sum
+             (internal/local-file-size large-file-copy)))
+
+        (finally
+          (jio/delete-file large-file-copy)))
+      )
 
   )
 
