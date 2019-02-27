@@ -54,6 +54,8 @@
 
   (if (or raw-bytes? (> threads 1))
     (let [total (local-file-size source)
+          _ (assert (<= total ARRAY-CAPACITY)
+                    "File too big - see `pslurp-big` or files larger than 2GB.")
           chunks (chunk-for-n threads total)
           target (byte-array total)]
       ;; sanity check
@@ -133,7 +135,7 @@
         total (->> all-bytes
                    (map #(alength ^bytes %))
                    (apply +))
-        _ (assert (> Long/MAX_VALUE total))
+        _ (assert (< total Long/MAX_VALUE))
         chunks (chunk-for-n (count contents) total)]
     ;; sanity check
     ;(assert (= threads (count chunks)))
