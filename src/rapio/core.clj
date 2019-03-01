@@ -117,10 +117,9 @@
     ;; main work
     (do-latched-work chunks
       (fn [start size]
-        (let [f (->file dest)]
-          (with-open [^RandomAccessFile out (RandomAccessFile. f "rw")]
-            (.seek out start)
-            (.write out all-bytes start size)))))))
+        (with-open [^RandomAccessFile out (RandomAccessFile. (->file dest) "rw")]
+          (.seek out start)
+          (.write out all-bytes start size))))))
 
 (defn pspit-big
   "Similar to `pspit`, but intended to be used against multiple <contents>,
@@ -143,9 +142,9 @@
     (dorun
       (pmap
         (fn [[start _] ^bytes content]
-          (let [source (->file dest)]
-            (with-open [^RandomAccessFile out (RandomAccessFile. source "rw")]
-              (.seek out start)
-              (.write out content 0 (alength content)))))
+          (with-open [^RandomAccessFile out (RandomAccessFile. (->file dest) "rw")]
+            (.seek out start)
+            (.write out content 0 (alength content))))
         chunks
         all-bytes))))
+
