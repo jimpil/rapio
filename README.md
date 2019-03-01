@@ -70,7 +70,7 @@ Similar to `pspit`, but intended to be used against multiple contents, whose con
 ```
 
 
-## Benchmarks
+## Benchmarks (based on `criterium`)
 ### Reading
 
 ```clj
