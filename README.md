@@ -82,7 +82,8 @@ Similar to `pspit`, but intended to be used against multiple contents, whose con
 
 ```clj
 ;; establish a baseline using `clojure.core/slurp`
-(bench (slurp "/home/dimitris/Desktop/words.txt" :buffer-size 2493110))
+(bench 
+  (slurp "/home/dimitris/Desktop/words.txt" :buffer-size 2493110))
 
 Evaluation count : 10440 in 60 samples of 174 calls.
              Execution time mean : 5.744526 ms
@@ -100,7 +101,8 @@ Found 1 outliers in 60 samples (1.6667 %)
 #### rapio.core/pslurp (2 threads) \[2.94ms\]
 
 ```clj
-(bench (pslurp "/home/dimitris/Desktop/words.txt" :threads 2))
+(bench 
+  (pslurp "/home/dimitris/Desktop/words.txt" :threads 2))
 
 Evaluation count : 20160 in 60 samples of 336 calls.
              Execution time mean : 2.942784 ms
@@ -111,8 +113,9 @@ Evaluation count : 20160 in 60 samples of 336 calls.
 
 ```
 
-On such a small file, using more threads won't give any benefit (I get the same mean with 2 and 3 threads).
-In short, the bigger the file - the greater the benefit from using more threads. For a 2.5MB file 2 threads seems to be the sweet-spot.
+On such a small file, using more threads won't provide much more benefit.
+Basically, the bigger the file - the greater the benefit from using more threads. 
+For this 2.5MB file, 2 threads seems to be the sweet-spot.
 
 
 ### Writing
