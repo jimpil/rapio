@@ -71,6 +71,12 @@ Similar to `pspit`, but intended to be used against multiple contents, whose con
 
 
 ## Benchmarks (based on `criterium`)
+
+### System
+
+* **Intel Core i5-4200M** (2C/4T)
+* **Samsung SSD Evo 840**
+
 ### Reading
 
 ```clj
@@ -84,7 +90,9 @@ Similar to `pspit`, but intended to be used against multiple contents, whose con
 ;; establish a baseline using `clojure.core/slurp`
 (bench 
   (slurp "/home/dimitris/Desktop/words.txt" :buffer-size 2493110))
+```
 
+```
 Evaluation count : 10440 in 60 samples of 174 calls.
              Execution time mean : 5.744526 ms
     Execution time std-deviation : 27.369778 µs
@@ -95,34 +103,32 @@ Evaluation count : 10440 in 60 samples of 174 calls.
 Found 1 outliers in 60 samples (1.6667 %)
 	low-severe	 1 (1.6667 %)
  Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
-
-```
+ ```
 
 #### rapio.core/pslurp (2 threads) \[2.94ms\]
 
 ```clj
 (bench 
   (pslurp "/home/dimitris/Desktop/words.txt" :threads 2))
+```
 
+```
 Evaluation count : 20160 in 60 samples of 336 calls.
              Execution time mean : 2.942784 ms
     Execution time std-deviation : 43.569728 µs
    Execution time lower quantile : 2.865612 ms ( 2.5%)
    Execution time upper quantile : 3.017564 ms (97.5%)
                    Overhead used : 1.676784 ns
-
 ```
 
-On such a small file, using more threads won't provide much more benefit.
-Basically, the bigger the file - the greater the benefit from using more threads. 
-For this 2.5MB file, 2 threads seems to be the sweet-spot.
-
+On this particular system (two real cores) and somewhat small file, using more threads won't provide much benefit. 
 
 ### Writing
+TODO
 
 ## License
 
-Copyright © 2019 FIXME
+Copyright © 2019 Dimitrios Piliouras
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 2.0 which is available at

@@ -11,14 +11,6 @@
         n5 (chunk-for-n 5 1800)
         n6 (chunk-for-n 6 1800)]
 
-    ;; check chunk counts
-    (is (= 2 (count n2)))
-    (is (= 3 (count n3)))
-    (is (= 4 (count n4)))
-    (is (= 5 (count n5)))
-    (is (= 6 (count n6)))
-
-    ;; check chunk borders
     (is (= [[0 900] [900 1800]] n2))
     (is (= [[0 600] [600 1200] [1200 1800]] n3))
     (is (= [[0 450] [450 900] [900 1350] [1350 1800]] n4))
