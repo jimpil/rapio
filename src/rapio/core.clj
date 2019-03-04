@@ -22,9 +22,8 @@
    CountDownLatch which is `.countDown()` after <body> executes."
   [latch & body]
   `(future
-     (let [l# ~(with-meta latch {:tag 'java.util.concurrent.CountDownLatch})
-           ret# (do ~@body)]
-       (.countDown l#)
+     (let [ret# (do ~@body)]
+       (.countDown ^CountDownLatch ~latch)
        ret#)))
 
 (defn- do-latched-work
@@ -55,7 +54,7 @@
   (if (or raw-bytes? (> threads 1))
     (let [total (local-file-size source)
           _ (assert (<= total ARRAY-CAPACITY)
-                    "File too big - see `pslurp-big` or files larger than 2GB.")
+                    "File too big! See `pslurp-big` for files larger than 2GB...")
           chunks (chunk-for-n threads total)
           target (byte-array total)]
       ;; sanity check
@@ -79,7 +78,7 @@
   [source]
   (let [total (local-file-size source)
         _ (assert (> total ARRAY-CAPACITY)
-                  "File not big enough - see `pslurp` for files smaller than 2GB.")
+                  "File not big enough! See `pslurp` for files smaller than 2GB...")
         nchunks (cond-> (quot total ARRAY-CAPACITY)
                         (pos? (rem total ARRAY-CAPACITY))
                         inc)
