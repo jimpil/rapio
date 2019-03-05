@@ -23,7 +23,7 @@
   [latch & body]
   `(future
      (let [ret# (do ~@body)]
-       (.countDown ^CountDownLatch ~latch)
+       (.countDown ^CountDownLatch ~(with-meta latch {:tag 'java.util.concurrent.CountDownLatch}))
        ret#)))
 
 (defn- do-latched-work

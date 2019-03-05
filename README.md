@@ -70,14 +70,14 @@ Similar to `pspit`, but intended to be used against multiple contents, whose con
 ```
 
 
-## Benchmarks (based on `criterium`)
+## Benchmarks
 
 ### System
 
 * **Intel Core i5-4200M** (2C/4T)
 * **Samsung SSD Evo 840**
 
-### Reading
+### Reading (based on `criterium`)
 
 ```clj
 ;; we'll be reading this 2.5MB file
@@ -123,8 +123,50 @@ Evaluation count : 20160 in 60 samples of 336 calls.
 
 On this particular system (two real cores) and somewhat small file, using more threads won't provide much benefit. 
 
-### Writing
-TODO
+### Writing (based on `clojure.core/time` for obvious reasons)
+
+We'll be writing the following 2.5MB String
+
+```clj
+(def content
+  (->> \a               ;; the actual content doesn't matter       
+       (repeat 2493110) ;; same number of bytes as for reading
+       (apply str)))
+```
+
+### clojure.core/spit (baseline) \[36.58ms\]
+
+```clj
+;; establish a baseline using `clojure.core/pspit`
+(time 
+  (spit "/home/dimitris/Desktop/a_lot_of_as.txt" content))
+```
+
+```
+Elapsed time: 36.58133 msecs
+```
+
+### rapio.core/pspit \[18.02ms\]
+
+```clj
+(time 
+  (pspit "/home/dimitris/Desktop/a_lot_of_as.txt" content :threads 2)))
+```
+
+```
+Elapsed time: 18.027583 msecs
+```
+
+## Hyper-threading
+If your CPU supports hyper-threading, my advice would be to override the default `:threads` parameter with the number of your true cores, or less. In my personal testing (on two different CPUs), I didn't find any evidence of hyper-threading being helpful here. 
+
+## TL;DR
+Solid State Drives are truly random-access, and therefore, one can benefit significantly from doing parallel (up to a certain extent) IO on them. If you are looking for one of the following, this library may be of help to you ;)
+
+* Faster (by means of parallelism) alternatives to the built-in `slurp/spit`, that will only work on local files only.
+* A way to read/write something that fits in your available RAM, but doesn't fit in a single String or byte-array. 
+
+The level of parallelism can be controlled in the first case, but not in the second. As always, you should perform your own benchmarks depending on the task at hand. 
 
 ## License
 

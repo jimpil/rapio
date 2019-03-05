@@ -35,6 +35,8 @@
   (Files/size (local-path source)))
 
 (defn chunk-for-n
+  "Returns <n> chunk borders.
+   The final chunk may be smaller than the rest."
   [n total-length]
   (let [qchunk (quot total-length n)]
     (->> [total-length]
@@ -44,6 +46,8 @@
          (partition 2 1))))
 
 (defn ->file
+  "Converts <x> to a java.io.File (via `jio/file`),
+   if not already one."
   ^File [x]
   (cond-> x
           (not (instance? File x))
