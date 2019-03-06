@@ -5,7 +5,8 @@
 A tiny library for doing parallel IO against local files in Clojure. It's all based on `java.io.RandomAccessFile`, and predicated on the fact that pretty much nobody uses mechanical hard-drives (HDD) anymore.
 
 ## Where
-FIXME
+
+[![Clojars Project](https://img.shields.io/clojars/v/rapio.svg)](https://clojars.org/rapio)
 
 ## Usage
 Only one namespace is required for typical usage:
