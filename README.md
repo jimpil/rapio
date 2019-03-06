@@ -135,7 +135,7 @@ We'll be writing the following 2.5MB String
        (apply str)))
 ```
 
-### clojure.core/spit (baseline) \[36.58ms\]
+#### clojure.core/spit (baseline) \[36.58ms\]
 
 ```clj
 ;; establish a baseline using `clojure.core/pspit`
@@ -147,7 +147,7 @@ We'll be writing the following 2.5MB String
 Elapsed time: 36.58133 msecs
 ```
 
-### rapio.core/pspit \[18.02ms\]
+#### rapio.core/pspit (2 threads) \[18.02ms\]
 
 ```clj
 (time 
