@@ -2,7 +2,7 @@
 
 
 ## What
-A tiny library for doing parallel IO against local files in Clojure. It's all based on `java.io.RandomAccessFile`.
+A tiny library for doing parallel IO against local files in Clojure. It's all based on `java.io.RandomAccessFile`, and predicated on the fact that pretty much nobody uses mechanical hard-drives (HDD) anymore.
 
 ## Where
 FIXME
@@ -163,10 +163,10 @@ If your CPU supports hyper-threading, my advice would be to override the default
 ## TL;DR
 Solid State Drives are truly random-access, and therefore, one can benefit significantly from doing parallel (up to a certain extent) IO on them. If you are looking for one of the following, this library may be of help to you ;)
 
-* Faster (by means of parallelism) alternatives to the built-in `slurp/spit`, that will only work on local files only.
+* Faster (by means of parallelism) alternatives to the built-in `slurp/spit`, that will only work on local files.
 * A way to read/write something that fits in your available RAM, but doesn't fit in a single String or byte-array. 
 
-The level of parallelism can be controlled in the first case, but not in the second. As always, you should perform your own benchmarks depending on the task at hand. 
+The level of parallelism can be controlled in the former case, but not in the latter. As always, you should perform your own benchmarks depending on the task at hand. 
 
 ## License
 
