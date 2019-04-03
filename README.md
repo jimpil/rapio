@@ -6,7 +6,7 @@ A tiny library for doing parallel IO against local files in Clojure. It's all ba
 
 ## Where
 
-[![Clojars Project](https://img.shields.io/clojars/v/rapio.svg)](https://clojars.org/rapio)
+[![Clojars Project](https://clojars.org/rapio/latest-version.svg)](https://clojars.org/rapio)
 
 ## Usage
 Only one namespace is required for typical usage:
